@@ -31,6 +31,12 @@ snail_x_pos = 800
 test_font = pygame.font.Font('font/Pixeltype.ttf', 50)
 text_surface = test_font.render('Score: ',False,'Black')
 
+# Create Sounds
+bruh_sound = pygame.mixer.Sound('audio/bruh.mp3')
+
+# Global Variables
+player_is_hit = False
+
 # Game Loop
 while True:
     # Update everything
@@ -40,6 +46,14 @@ while True:
         snail_rect.right-=6
     else:
         snail_rect.left = 800
+
+    # collision detection on player
+    if player_rect.colliderect(snail_rect) and player_is_hit==False:
+        print('bruh you hit da snail')
+        player_is_hit = True
+        pygame.mixer.Sound.play(bruh_sound)
+    elif not player_rect.colliderect(snail_rect) and player_is_hit==True:
+        player_is_hit = False
 
 
     # Event Loop
