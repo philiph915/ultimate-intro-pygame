@@ -57,7 +57,8 @@ def check_collisions(obstacle_rect_list,player_rect):
 
 # reset game objects to initial states
 def game_reset():
-    global game_active, obstacle_rect_list, test_font, player_rect, score, player_vel_y, score_text_rect, score_str, score_text_surface, player_health, health_text_surface
+    global game_active, obstacle_rect_list, obstacle_timer, test_font, player_rect, score, player_vel_y
+    global score_text_rect, score_str, score_text_surface, player_health, health_text_surface, obstacle_vel
     game_active = True
     obstacle_rect_list.clear()
     player_rect.midbottom = (80,300)
@@ -72,6 +73,7 @@ def game_reset():
     player_health_str = 'Health: {}'.format(str(player_health))
     health_text_surface = test_font.render(player_health_str,False,'Black')
     obstacle_vel = 20
+    pygame.time.set_timer(obstacle_timer,int(3000*math.exp(-score*0.02)))
     
 def screen_shake():
     return 2*randint(0,8)-4, 2*randint(0,8)-4
@@ -172,7 +174,7 @@ health_text_rect = health_text_surface.get_rect(midbottom = (100,50))
 # Game Over Text
 game_over_text_surface = test_font.render("GAME OVER",False,"Black")
 game_over_text_rect = score_text_surface.get_rect(midbottom = (390,100))
-restart_instruction_text_surface = test_font.render("Press Space to Play Again",False,"Black")
+restart_instruction_text_surface = test_font.render("Press Enter to Play Again",False,"Black")
 restart_instruction_text_rect = restart_instruction_text_surface.get_rect(midbottom = (400, 350))
 
 text_window_rect = score_text_rect.copy()
@@ -189,13 +191,17 @@ player_stand_rect = player_stand_surf.get_rect(midbottom = (360,200))
 bruh_sound = pygame.mixer.Sound('audio/bruh.mp3')
 bwah_sound = pygame.mixer.Sound('audio/bwaaah.mp3')
 jump_sound = pygame.mixer.Sound('audio/jump.mp3')
-jump_sound.set_volume(0.5)
+voldemort_sound = pygame.mixer.Sound('audio/voldemort.mp3')
 hit_sound = pygame.mixer.Sound('audio/Explosion5.wav')
 music_sound = pygame.mixer.music.load('audio/music.wav')
 
 # Start the music
 pygame.mixer.music.play(-1)
-pygame.mixer.music.set_volume(0.5)
+
+# Adjust SFX Volume
+voldemort_sound.set_volume(0.25)
+jump_sound.set_volume(0.5)
+pygame.mixer.music.set_volume(0.25)
 
 # Timers
 obstacle_timer = pygame.USEREVENT + 1 # Add a user event
@@ -236,7 +242,8 @@ while True:
 
             # Spawn Enemies
             if event.type == obstacle_timer:
-                pygame.time.set_timer(obstacle_timer,int(1500*math.exp(-score*0.009))) # Update the timer duration
+                pygame.time.set_timer(obstacle_timer,int(3000*math.exp(-score*0.02)))#int(1500*math.exp(-score*0.009))) # Update the timer duration
+                pygame.mixer.Sound.play(voldemort_sound)
                 # print(obstacle_timer,int(1500*math.exp(-score*0.009)))
                 if randint(0,2): # random integer (either 0 or 1)
                     obstacle_rect_list.append(snail_surf.get_rect(bottomright = (randint(900,1100),300))) # spwan a snail
@@ -257,7 +264,7 @@ while True:
         
         # Game Over / Title State
         else:
-            if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
+            if event.type == pygame.KEYDOWN and event.key == pygame.K_RETURN:
                 # Reset the game
                 game_reset()
 
