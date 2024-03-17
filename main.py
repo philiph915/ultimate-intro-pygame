@@ -9,11 +9,12 @@ def display_score():
 
 # Function to move all the enemmies in the obstacle list
 def obstacle_movement(obstacle_list):
+    global obstacle_vel
     if obstacle_list: # returns 0 if list is empty
 
         for obstacle_rect in obstacle_list: # loops through all the items in the list
             # print(obstacle_list)
-            obstacle_rect.x-=20
+            obstacle_rect.x-=obstacle_vel
 
             # if the obstacle is on the ground, it is a snail, otherwise it is a fly
             if obstacle_rect.bottom == 300: screen.blit(snail_surf,(obstacle_rect.topleft[0]+shake_offset_X,obstacle_rect.topleft[1]+shake_offset_Y))
@@ -70,6 +71,7 @@ def game_reset():
     # Update Health Text
     player_health_str = 'Health: {}'.format(str(player_health))
     health_text_surface = test_font.render(player_health_str,False,'Black')
+    obstacle_vel = 20
     
 def screen_shake():
     return 2*randint(0,8)-4, 2*randint(0,8)-4
@@ -92,6 +94,7 @@ game_active = True
 SCORE_TEXT_WINDOW_OFFSET_X = 50
 SCORE_TEXT_WINDOW_OFFSET_Y = 10
 screen_shake_timer = 0
+obstacle_vel = 20
 
 # Player State Variables
 player_is_walking = False
@@ -327,6 +330,7 @@ while True:
             score+=1
             score_str = 'Score: {}'.format(str(score))
             score_text_surface = test_font.render(score_str,False,'Black')
+            obstacle_vel*=1.01
 
         # Handle Screen Shake
         if screen_shake_timer>0:
