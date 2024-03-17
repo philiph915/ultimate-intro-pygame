@@ -234,7 +234,7 @@ while True:
             # Spawn Enemies
             if event.type == obstacle_timer:
                 pygame.time.set_timer(obstacle_timer,int(1500*math.exp(-score*0.009))) # Update the timer duration
-                print(obstacle_timer,int(1500*math.exp(-score*0.009)))
+                # print(obstacle_timer,int(1500*math.exp(-score*0.009)))
                 if randint(0,2): # random integer (either 0 or 1)
                     obstacle_rect_list.append(snail_surf.get_rect(bottomright = (randint(900,1100),300))) # spwan a snail
                 else:
