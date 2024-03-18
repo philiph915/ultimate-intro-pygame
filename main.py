@@ -58,7 +58,7 @@ def check_collisions(obstacle_rect_list,player_rect):
 # reset game objects to initial states
 def game_reset():
     global game_active, obstacle_rect_list, obstacle_timer, test_font, player_rect, score, player_vel_y
-    global score_text_rect, score_str, score_text_surface, player_health, health_text_surface, obstacle_vel
+    global score_text_rect, score_str, score_text_surface, player_health, health_text_surface, obstacle_vel, enable_voldemort
     game_active = True
     obstacle_rect_list.clear()
     player_rect.midbottom = (80,300)
@@ -72,8 +72,9 @@ def game_reset():
     # Update Health Text
     player_health_str = 'Health: {}'.format(str(player_health))
     health_text_surface = test_font.render(player_health_str,False,'Black')
-    obstacle_vel = 20
+    obstacle_vel = 15
     pygame.time.set_timer(obstacle_timer,int(3000*math.exp(-score*0.02)))
+    enable_voldemort = False
     
 def screen_shake():
     return 2*randint(0,8)-4, 2*randint(0,8)-4
@@ -96,7 +97,9 @@ game_active = True
 SCORE_TEXT_WINDOW_OFFSET_X = 50
 SCORE_TEXT_WINDOW_OFFSET_Y = 10
 screen_shake_timer = 0
-obstacle_vel = 20
+obstacle_vel = 15
+enable_voldemort = False
+voldemort_thresh = 5
 
 # Player State Variables
 player_is_walking = False
@@ -200,6 +203,7 @@ pygame.mixer.music.play(-1)
 
 # Adjust SFX Volume
 voldemort_sound.set_volume(0.25)
+bwah_sound.set_volume(0.5)
 jump_sound.set_volume(0.5)
 pygame.mixer.music.set_volume(0.25)
 
@@ -243,7 +247,7 @@ while True:
             # Spawn Enemies
             if event.type == obstacle_timer:
                 pygame.time.set_timer(obstacle_timer,int(3000*math.exp(-score*0.02)))#int(1500*math.exp(-score*0.009))) # Update the timer duration
-                pygame.mixer.Sound.play(voldemort_sound)
+                if enable_voldemort: pygame.mixer.Sound.play(voldemort_sound)
                 # print(obstacle_timer,int(1500*math.exp(-score*0.009)))
                 if randint(0,2): # random integer (either 0 or 1)
                     obstacle_rect_list.append(snail_surf.get_rect(bottomright = (randint(900,1100),300))) # spwan a snail
@@ -338,6 +342,8 @@ while True:
             score_str = 'Score: {}'.format(str(score))
             score_text_surface = test_font.render(score_str,False,'Black')
             obstacle_vel*=1.01
+            if score> voldemort_thresh and enable_voldemort == False:
+                enable_voldemort = True
 
         # Handle Screen Shake
         if screen_shake_timer>0:
