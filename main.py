@@ -3,6 +3,92 @@ from sys import exit
 from random import randint # Function to generate random integers
 import math
 
+class Player(pygame.sprite.Sprite): # Player Class inherits from Sprite Class
+    def __init__(self): # Constructor method: Sets class properties
+        super().__init__() # this line calls the parent class constructor
+
+        # Initialize Class Properties (self.image and self.rect are required for sprite class)
+
+        # Get Required Global Variables
+        global GRAVITY, SCREEN_HEIGHT, SCREEN_WIDTH
+
+        # Player Graphics
+        player_walk_1 = pygame.image.load('graphics/Player/player_walk_1.png').convert_alpha()
+        player_walk_2 = pygame.image.load('graphics/Player/player_walk_2.png').convert_alpha()
+        self.player_stand  = pygame.image.load('graphics/Player/player_stand.png').convert_alpha()
+        self.player_walk = [player_walk_1, player_walk_2]
+        self.player_index = 0 # Index variable for controlling player walk animation
+        self.player_jump = pygame.image.load('graphics/Player/jump.png').convert_alpha()
+
+        # Player Properties
+        self.walk_vel = 4
+        self.is_walking = False
+        self.is_facing_right = 1
+        self.jump_vel = 20
+        self.vel_y = 0
+
+        # Sounds
+        self.jump_sound = pygame.mixer.Sound('audio/jump.mp3')
+        self.jump_sound.set_volume(0.5)
+
+        # Sprite Object Properties
+        self.image = self.player_walk[self.player_index]
+        self.rect = self.image.get_rect(midbottom=(80,300))
+
+# TODO: Add Obstacle Class
+
+    def update(self):
+        self.player_input()
+        self.player_movement()
+        self.animation_state()
+
+    def player_movement(self):
+        # Apply Gravitational Acceleration
+        self.vel_y -= GRAVITY
+        self.rect.y -= self.vel_y
+
+        # Resolve player collision with ground
+        if self.rect.bottom >= 300:
+            self.rect.bottom = 300
+
+        # Resolve player collision with screen edges
+        if self.rect.left < 0:
+            self.rect.left = 0
+        elif self.rect.right > SCREEN_WIDTH:
+            self.rect.right = SCREEN_WIDTH
+
+    def player_input(self):
+        keys = pygame.key.get_pressed()
+        # Jumping
+        if keys[pygame.K_SPACE]:
+            if self.rect.bottom==300:
+                self.vel_y = self.jump_vel
+                self.jump_sound.play()
+        # Walking
+        if keys[pygame.K_a]:
+            self.is_walking = True
+            self.is_facing_right = 0
+            self.rect.left-=self.walk_vel 
+        if keys[pygame.K_d]:
+            self.is_walking = True
+            self.is_facing_right = 1
+            self.rect.left+=self.walk_vel 
+        if not keys[pygame.K_a] and not keys[pygame.K_d]:
+            self.is_walking = False
+
+    def animation_state(self):
+        # Display the jump surface if the player is in the air
+        if self.rect.bottom < 298:
+            self.image = pygame.transform.flip(self.player_jump,not self.is_facing_right, 0)
+        
+        else: # Play walking animation if the player is on the floor
+            if self.is_walking == True:
+                self.player_index += 0.1
+                if self.player_index >= len(self.player_walk): self.player_index = 0
+                self.image = pygame.transform.flip(self.player_walk[int(self.player_index)],not self.is_facing_right, 0)
+            else:
+                self.image = self.player_stand
+
 def display_score():
     # PLACEHOLDER
     pass
@@ -119,6 +205,10 @@ shake_offset_Y = 0
 screen = pygame.display.set_mode((SCREEN_WIDTH,SCREEN_HEIGHT)) # create the game window
 pygame.display.set_caption('Ultimate Pygame Tutorial') # set the window caption
 clock = pygame.time.Clock() # create a clock object for controlling the framerate
+
+# Create a GroupSingle (sprite group with one sprite)
+player = pygame.sprite.GroupSingle()
+player.add(Player()) # Add the player sprite object to the GroupSingle
 
 # Create surfaces (Graphics holders) & Create rectangles (Position holders)
 
@@ -274,7 +364,7 @@ while True:
 
     if game_active:
         # ============== Update Loop ================= #
-        
+        player.update()
         # Player Movement
         player_vel_y -= GRAVITY  # Acceleration due to gravity
         player_rect.bottom-=player_vel_y;
@@ -380,7 +470,9 @@ while True:
 
         # Draw Player
         player_animation(player_is_walking) # update player animation state
-        if player_is_visible: screen.blit(player_surf,(player_rect.topleft[0] + shake_offset_X,player_rect.topleft[1] + shake_offset_X))
+        # if player_is_visible: screen.blit(player_surf,(player_rect.topleft[0] + shake_offset_X,player_rect.topleft[1] + shake_offset_X))
+
+        player.draw(screen)
     else:
         screen.fill('Pink')
         screen.blit(game_over_text_surface,game_over_text_rect)
